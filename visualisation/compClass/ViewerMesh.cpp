@@ -30,6 +30,7 @@ ViewerMesh< Space, KSpace>::init(){
    DGtal::Viewer3D<>::init();
    (*this).setForegroundColor(QColor::QColor(255,55,55,255));
    QGLViewer::setKeyDescription ( Qt::Key_D|Qt::MetaModifier, "Delete the current selected faces (highlighted in red)" );
+   QGLViewer::setKeyDescription ( Qt::Key_R|Qt::ShiftModifier, "Do an invert selection)" );
    QGLViewer::setKeyDescription ( Qt::Key_D, "Change the current mode to Delete mode" );
    QGLViewer::setKeyDescription ( Qt::Key_C, "Change the current mode to Color mode" );
    QGLViewer::setKeyDescription ( Qt::Key_Z, "Change the current axis to Z for the current 2D image slice setting." );
@@ -86,7 +87,7 @@ ViewerMesh< Space, KSpace>::keyPressEvent ( QKeyEvent *e )
     (*this).displayMessage(QString(ss.str().c_str()), 100000);
     handled=true;
   }
-   if( e->key() == Qt::Key_Minus){
+  if( e->key() == Qt::Key_Minus){
     myPenSize -= 1;
     std::stringstream ss;
     ss << "Pen size: " << myPenSize*myPenScale;
@@ -113,6 +114,14 @@ ViewerMesh< Space, KSpace>::keyPressEvent ( QKeyEvent *e )
     }
     handled=true;
   }
+
+  if( e->key() == Qt::Key_R){
+    if (e->modifiers() & Qt::ShiftModifier){
+      doInvertSelection();
+    }
+    handled=true;
+  }
+
   
   if ( !handled )
     DGtal::Viewer3D<>::keyPressEvent ( e );
@@ -153,6 +162,24 @@ ViewerMesh<Space, KSpace>::deleteCurrents(){
   myUndoQueueSelected.clear();
 }
 
+template< typename Space, typename KSpace>
+void
+ViewerMesh<Space, KSpace>::doInvertSelection(){
+  myUndoQueueSelected.push_front(myVectFaceToDelete);
+  std::sort(myVectFaceToDelete.begin(), myVectFaceToDelete.end());
+  std::vector<unsigned int> faceIndexes;
+  std::vector<unsigned int> newFacesToDetele;
+  std::sort(myVectFaceToDelete.begin(), myVectFaceToDelete.end());
+  for (unsigned int i = 0; i < myMesh.nbFaces(); i++) {
+      faceIndexes.push_back(i);
+  }
+  std::sort(myVectFaceToDelete.begin(), myVectFaceToDelete.end());
+  std::set_difference(faceIndexes.begin(), faceIndexes.end(), myVectFaceToDelete.begin(), myVectFaceToDelete.end(), 
+                                  std::inserter(newFacesToDetele, newFacesToDetele.begin()));
+  myVectFaceToDelete = newFacesToDetele;
+  (*this).displayMessage(QString("New selected size: ") + QString::number(myVectFaceToDelete.size()), 100000);
+  displaySelectionOnMesh();
+}
 
 
 template< typename Space, typename KSpace>

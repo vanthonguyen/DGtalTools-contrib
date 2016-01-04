@@ -68,6 +68,8 @@ public:
   void deleteFacesFromDist(DGtal::Z3i::RealPoint p);
   void addToDelete(DGtal::Z3i::RealPoint p);
   void deleteCurrents();
+  void deleteOthers();
+  void doInvertSelection();
   void displaySelectionOnMesh();
   void setDeleteMode();
   void setColorMode();
