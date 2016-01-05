@@ -54,13 +54,40 @@ class ViewerMesh: public DGtal::Viewer3D <Space, KSpace>
 
   static const unsigned int MAXUNDO=10;
   typedef DGtal::Mesh<DGtal::Z3i::RealPoint> RealMesh;
-
+  typedef DGtal::ImageContainerBySTLVector<DGtal::Z3i::Domain,  std::vector<DGtal::Z3i::RealPoint> > ImagePointAssociation;
 
 public:
   
   ViewerMesh(RealMesh &aMesh, std::string outMeshName): myPenScale(1.0), myPenColor(DGtal::Color::Blue), 
                                                         myMesh(aMesh), myOutMeshName(outMeshName),
                                                         myPenSize(5.0), myMode(COLOR_MODE) {
+    std::vector<DGtal::Z3i::RealPoint::Component> vectX;
+    std::vector<DGtal::Z3i::RealPoint::Component> vectY;
+    std::vector<DGtal::Z3i::RealPoint::Component> vectZ;
+    for( RealMesh::VertexStorage::const_iterator it= myMesh.vertexBegin(); it!=myMesh.vertexEnd(); it++){
+        vectX.push_back((*it)[0]);
+        vectY.push_back((*it)[1]);
+        vectZ.push_back((*it)[2]);
+    }
+
+    DGtal::Z3i::RealPoint::Component valMaxX = *(std::max_element(vectX.begin(), vectX.end() )); 
+    DGtal::Z3i::RealPoint::Component valMaxY = *(std::max_element(vectY.begin(), vectY.end() ));
+    DGtal::Z3i::RealPoint::Component valMaxZ = *(std::max_element(vectZ.begin(), vectZ.end() )); 
+
+    DGtal::Z3i::RealPoint::Component valMinX = *(std::min_element(vectX.begin(), vectX.end() )); 
+    DGtal::Z3i::RealPoint::Component valMinY = *(std::min_element(vectY.begin(), vectY.end() )); 
+    DGtal::Z3i::RealPoint::Component valMinZ = *(std::min_element(vectZ.begin(), vectZ.end() )); 
+
+    DGtal::Z3i::RealPoint minPt (valMinX, valMinY, valMinZ);
+    DGtal::Z3i::RealPoint maxPt (valMaxX, valMaxY, valMaxZ);
+    boudingBox.first= minPt;
+    boudingBox.second= maxPt;
+
+    DGtal::Z3i::Domain dom(DGtal::Z3i::Point((int) minPt[0], (int) minPt[1], (int) minPt[2]),
+    DGtal::Z3i::Point((int) maxPt[0], (int) maxPt[1], (int) maxPt[2]));
+    unsigned int domSize = (int)(maxPt-minPt)[0]*(int)(maxPt-minPt)[1]*(int)(maxPt-minPt)[2];
+    image3d = ImagePointAssociation(dom);
+       
   }
   
   
@@ -88,11 +115,18 @@ protected:
   void addCurrentMeshToQueue();  
   
   RealMesh &myMesh;
+  //to speed up the selection
+  ImagePointAssociation image3d;
+
+  std::pair<DGtal::Z3i::RealPoint, DGtal::Z3i::RealPoint> boudingBox;
+
   std::string myOutMeshName;
   EditMode myMode;
   std::vector<unsigned int> myVectFaceToDelete;
   std::deque<RealMesh> myUndoQueue;
   std::deque<std::vector<unsigned int>> myUndoQueueSelected;
+
+  std::pair<DGtal::Z3i::RealPoint, DGtal::Z3i::RealPoint> getBoundingBox();
   
 };
 

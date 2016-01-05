@@ -38,6 +38,7 @@ ViewerMesh< Space, KSpace>::init(){
    QGLViewer::setKeyDescription ( Qt::Key_Minus, "Decrease by one the pen size" );
    QGLViewer::setKeyDescription ( Qt::Key_Minus, "Undo the last edition." );
    QGLViewer::setKeyDescription ( Qt::Key_S, "Save the current mesh." );
+   QGLViewer::setMouseBinding(Qt::AltModifier, Qt::LeftButton, QGLViewer::SELECT);
 }
 
 
@@ -292,4 +293,33 @@ ViewerMesh<Space, KSpace>::save()
 }
 
 
+
+template< typename Space, typename KSpace>
+std::pair<DGtal::Z3i::RealPoint, DGtal::Z3i::RealPoint>
+ViewerMesh<Space, KSpace>::getBoundingBox(){
+  std::pair<DGtal::Z3i::RealPoint, DGtal::Z3i::RealPoint> theResult;
+  std::vector<DGtal::Z3i::RealPoint::Component> vectX;
+  std::vector<DGtal::Z3i::RealPoint::Component> vectY;
+  std::vector<DGtal::Z3i::RealPoint::Component> vectZ;
+  for( RealMesh::VertexStorage::const_iterator it= myMesh.vertexBegin(); it!=myMesh.vertexEnd(); it++){
+    vectX.push_back((*it)[0]);
+    vectY.push_back((*it)[1]);
+    vectZ.push_back((*it)[2]);
+  }
+
+  DGtal::Z3i::RealPoint::Component valMaxX = *(std::max_element(vectX.begin(), vectX.end() )); 
+  DGtal::Z3i::RealPoint::Component valMaxY = *(std::max_element(vectY.begin(), vectY.end() ));
+  DGtal::Z3i::RealPoint::Component valMaxZ = *(std::max_element(vectZ.begin(), vectZ.end() )); 
+
+  DGtal::Z3i::RealPoint::Component valMinX = *(std::min_element(vectX.begin(), vectX.end() )); 
+  DGtal::Z3i::RealPoint::Component valMinY= *(std::min_element(vectY.begin(), vectY.end() )); 
+  DGtal::Z3i::RealPoint::Component valMinZ = *(std::min_element(vectZ.begin(), vectZ.end() )); 
+
+  DGtal::Z3i::RealPoint minPt (valMinX, valMinY, valMinZ);
+  DGtal::Z3i::RealPoint maxPt (valMaxX, valMaxY, valMaxZ);
+  theResult.first= minPt;
+  theResult.second= maxPt;
+
+  return theResult;
+}
 
