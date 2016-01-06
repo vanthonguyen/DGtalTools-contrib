@@ -39,9 +39,8 @@ ViewerMesh< Space, KSpace>::init(){
    QGLViewer::setKeyDescription ( Qt::Key_Minus, "Undo the last edition." );
    QGLViewer::setKeyDescription ( Qt::Key_S, "Save the current mesh." );
    QGLViewer::setMouseBinding(Qt::AltModifier, Qt::LeftButton, QGLViewer::SELECT);
+
 }
-
-
 
 
 template < typename Space, typename KSpace>
@@ -128,6 +127,44 @@ ViewerMesh< Space, KSpace>::keyPressEvent ( QKeyEvent *e )
     DGtal::Viewer3D<>::keyPressEvent ( e );
 }  
 
+void Viewer::mousePressEvent(QMouseEvent* e)
+{
+  if ((e->button() == Qt::RightButton) && (e->modifiers() == Qt::NoButton))
+	{
+	  QMenu menu( this );
+	  menu.addAction("Camera positions");
+	  menu.addSeparator();
+	  QMap<QAction*, int> menuMap;
+
+	  bool atLeastOne = false;
+	  // We only test the 20 first indexes. This is a limitation.
+	  for (unsigned short i=0; i<20; ++i)
+	if (camera()->keyFrameInterpolator(i))
+	  {
+		atLeastOne = true;
+		QString text;
+		if (camera()->keyFrameInterpolator(i)->numberOfKeyFrames() == 1)
+		  text = "Position "+QString::number(i);
+		else
+		  text = "Path "+QString::number(i);
+
+		menuMap[menu.addAction(text)] = i;
+	  }
+
+	  if (!atLeastOne)
+	{
+	  menu.addAction("No position defined");
+	  menu.addAction("Use to Alt+Fx to define one");
+	}
+
+	  QAction* action = menu.exec(e->globalPos());
+
+	  if (atLeastOne && action)
+		  camera()->playPath(menuMap[action]);
+	}
+  else
+	QGLViewer::mousePressEvent(e);
+}
 
 
 
@@ -292,7 +329,20 @@ ViewerMesh<Space, KSpace>::save()
   (*this).displayMessage(QString("SAVED"), 100000);
 }
 
+template< typename Space, typename KSpace>
+void 
+ViewerMesh<Space, KSpace>::initImage3D(){
+   const DGtal::Z3i::Domain domain = myImage3d.domain();
+   DGtal::Z3i::RealPoint p0 = *(domain.begin());
+   DGtal::Z3i::RealPoint p1 = *(domain.end());
 
+  for (unsigned int i = 0; i < myMesh.nbFaces(); i++) {
+    DGtal::Z3i::RealPoint c = myMesh.getFaceBarycenter(i);
+    std::vector<unsigned int> currentListPoint = myImage3d(c);
+    currentListPoint.push_back(i);
+    myImage3d.setValue(c, currentListPoint);
+  }
+}
 
 template< typename Space, typename KSpace>
 std::pair<DGtal::Z3i::RealPoint, DGtal::Z3i::RealPoint>
@@ -322,4 +372,6 @@ ViewerMesh<Space, KSpace>::getBoundingBox(){
 
   return theResult;
 }
+
+
 

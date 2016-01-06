@@ -54,13 +54,16 @@ class ViewerMesh: public DGtal::Viewer3D <Space, KSpace>
 
   static const unsigned int MAXUNDO=10;
   typedef DGtal::Mesh<DGtal::Z3i::RealPoint> RealMesh;
-  typedef DGtal::ImageContainerBySTLVector<DGtal::Z3i::Domain,  std::vector<DGtal::Z3i::RealPoint> > ImagePointAssociation;
+  typedef DGtal::ImageContainerBySTLVector<DGtal::Z3i::Domain,  std::vector<unsigned int> > ImagePointAssociation;
 
 public:
   
-  ViewerMesh(RealMesh &aMesh, std::string outMeshName): myPenScale(1.0), myPenColor(DGtal::Color::Blue), 
+  ViewerMesh(RealMesh &aMesh, std::string outMeshName, ImagePointAssociation &anImage3d): myPenScale(1.0), 
+                                                        myPenColor(DGtal::Color::Blue), 
                                                         myMesh(aMesh), myOutMeshName(outMeshName),
+                                                        myImage3d(anImage3d),
                                                         myPenSize(5.0), myMode(COLOR_MODE) {
+    /*
     std::vector<DGtal::Z3i::RealPoint::Component> vectX;
     std::vector<DGtal::Z3i::RealPoint::Component> vectY;
     std::vector<DGtal::Z3i::RealPoint::Component> vectZ;
@@ -84,10 +87,10 @@ public:
     boudingBox.second= maxPt;
 
     DGtal::Z3i::Domain dom(DGtal::Z3i::Point((int) minPt[0], (int) minPt[1], (int) minPt[2]),
-    DGtal::Z3i::Point((int) maxPt[0], (int) maxPt[1], (int) maxPt[2]));
+                          DGtal::Z3i::Point((int) maxPt[0], (int) maxPt[1], (int) maxPt[2]));
     unsigned int domSize = (int)(maxPt-minPt)[0]*(int)(maxPt-minPt)[1]*(int)(maxPt-minPt)[2];
-    image3d = ImagePointAssociation(dom);
-       
+    myImage3d = ImagePointAssociation(dom);
+    */
   }
   
   
@@ -113,10 +116,10 @@ protected:
   virtual void keyPressEvent ( QKeyEvent *e );
   virtual void init();
   void addCurrentMeshToQueue();  
-  
+  void initImage3D(); 
   RealMesh &myMesh;
   //to speed up the selection
-  ImagePointAssociation image3d;
+  ImagePointAssociation &myImage3d;
 
   std::pair<DGtal::Z3i::RealPoint, DGtal::Z3i::RealPoint> boudingBox;
 
