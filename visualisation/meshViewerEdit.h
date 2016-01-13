@@ -40,6 +40,7 @@
 #include "compClass/ViewerMesh.cpp"
 
 
+using namespace DGtal;
 
 #include <QMainWindow>
 
@@ -55,7 +56,7 @@ class MainWindow : public QMainWindow
 
     
 public:
-  explicit MainWindow(ViewerMesh<> *viewer,   QWidget *parent = 0, Qt::WindowFlags flags=0);
+  explicit MainWindow(Viewer3D<> *viewer,   QWidget *parent = 0, Qt::WindowFlags flags=0);
   ~MainWindow();
   
 public slots:
@@ -73,7 +74,7 @@ public slots:
 
 private:
   Ui::MainWindow *ui;
-  ViewerMesh<> *myViewer;  
+  Viewer3D<> *myViewer;  
 };
 
 #endif // MAINWINDOW_H

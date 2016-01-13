@@ -81,25 +81,44 @@ main(int argc,char **argv)
     Z3i::RealPoint p1 = theMeshRef.getVertex(aFace.at(2));
     Z3i::RealPoint p2 = theMeshRef.getVertex(aFace.at(1));
     Z3i::RealPoint center = (p0+p1+p2)/3.0;
+    //check if there is a null face 
     TPoint normal = ((p1-p0).crossProduct(p2 - p0)).getNormalized();      
+    if(std::isnan(normal[0])){
+        vectFaceErros.push_back(0);
+        continue;
+    }
+    bool ok = false;
     for (unsigned int j=0; j < theMeshComp.nbFaces(); j++){
       std::vector<unsigned int>  aFaceC = theMeshComp.getFace(j);
       
       Z3i::RealPoint ps0 = theMeshComp.getVertex(aFaceC[0]);
       Z3i::RealPoint ps1 = theMeshComp.getVertex(aFaceC[2]);
       Z3i::RealPoint ps2 = theMeshComp.getVertex(aFaceC[1]);
-      
+      //Z3i::RealPoint cs = (ps0 + ps1 + ps2)/3.0;
+
       double val = normal[0]*ps0[0] + normal[1]*ps0[1] + normal[2]*ps0[2];
       double valP = normal[0]*center[0] + normal[1]*center[1] + normal[2]*center[2];
       
       double distance =  (val-valP)*(val-valP);
-      if (distance < distanceMin   ){
+      //double distance = (cs - center).norm();
+      if (distance < distanceMin){
         distanceMin = distance;
+        ok = true;
+      }else{
+          //trace.error()<<normal<<std::endl;
+          //trace.info()<<val<<std::endl;
+          //trace.error()<<valP<<std::endl;
       }
     }
-    
+    assert(ok);
+    if(!ok){
+        trace.error()<<"Not OK"<<std::endl;
+    }
     if(distanceMin>maxOfMin){
       maxOfMin = distanceMin;
+    }
+    if(distanceMin > 9){
+        distanceMin = 9;
     }
     vectFaceErros.push_back(distanceMin);
   }
