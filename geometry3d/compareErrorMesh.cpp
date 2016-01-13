@@ -87,7 +87,6 @@ main(int argc,char **argv)
         vectFaceErros.push_back(0);
         continue;
     }
-    bool ok = false;
     for (unsigned int j=0; j < theMeshComp.nbFaces(); j++){
       std::vector<unsigned int>  aFaceC = theMeshComp.getFace(j);
       
@@ -103,22 +102,10 @@ main(int argc,char **argv)
       //double distance = (cs - center).norm();
       if (distance < distanceMin){
         distanceMin = distance;
-        ok = true;
-      }else{
-          //trace.error()<<normal<<std::endl;
-          //trace.info()<<val<<std::endl;
-          //trace.error()<<valP<<std::endl;
       }
-    }
-    assert(ok);
-    if(!ok){
-        trace.error()<<"Not OK"<<std::endl;
     }
     if(distanceMin>maxOfMin){
       maxOfMin = distanceMin;
-    }
-    if(distanceMin > 9){
-        distanceMin = 9;
     }
     vectFaceErros.push_back(distanceMin);
   }
