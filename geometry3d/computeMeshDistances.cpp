@@ -30,6 +30,7 @@
 #include "DGtal/base/Common.h"
 #include "DGtal/helpers/StdDefs.h"
 #include "DGtal/io/readers/MeshReader.h"
+#include "DGtal/io/readers/PointListReader.h"
 #include "DGtal/io/writers/MeshWriter.h"
 #include "DGtal/io/colormaps/GradientColorMap.h"
 #include "DGtal/io/colormaps/HueShadeColorMap.h"
@@ -48,6 +49,20 @@ namespace po = boost::program_options;
 
 static const double approxSamePlane = 0.1;
 
+
+void readDistanceFromFile(const std::string &fileName, std::vector<double> &vectDistances){
+  std::ifstream infile;
+  infile.open (fileName.c_str(), std::ifstream::in);    
+  std::string str;
+  getline(infile, str );
+  while ( infile.good() ){
+    if ( ( str != "" ) && ( str[ 0 ] != '#' ) ){
+        vectDistances.push_back(std::stod(str));
+    }
+    getline(infile, str);
+  }
+}
+    
 template <typename TPoint>
 static
 bool sameSide(const TPoint &p1,const TPoint &p2, const TPoint &a,const TPoint &b)
@@ -132,7 +147,8 @@ main(int argc,char **argv)
   ("help,h", "display this message")
   ("input,i", po::value<std::string>(), "input file name of mesh A (reference shape) given as OFF format.")
   ("inputComp,c", po::value<std::string>(), "input file name of mesh B (compared shape) given as OFF format.")
-   ("output,o", po::value<std::string>(),  "arg = file.dat : output file containing all the distances of each input mesh faces (faces of A)")
+  ("output,o", po::value<std::string>(),  "arg = file.dat : output file containing all the distances of each input mesh faces (faces of A)")
+  ("inputDistance", po::value<std::string>(),  "arg = file.dat : input file containing all the distances of each input mesh faces (faces of A)")
   ("outputMesh,m", po::value<std::string>(),  "arg = file.off : export the resulting distances represented with a color scale on the faces of the reference mesh A.")
   ("faceCenterDistance,f", "approximates the minimal distance by using the euclidean distance of the face centers (instead using the minimal distance given by projection).")
   ("squaredDistance,s", "computes squared distance.")
@@ -186,11 +202,30 @@ main(int argc,char **argv)
   bool squaredDistance = vm.count("squaredDistance");
   
   trace.info()<< "reading the input Comp mesh ok: "<< theMeshComp.nbVertex() <<  std::endl;
-  
+ 
   
   
   double maxOfMin = 0;
   std::vector<double> vectFaceDistances;
+  if(vm.count("inputDistance")){
+      readDistanceFromFile(vm["inputDistance"].as<std::string>(), vectFaceDistances);
+      trace.info()<<vectFaceDistances.size();
+      DGtal::GradientColorMap<double, CMAP_JET>  gradientShade(minScaleDistance, maxScaleDistance );
+      for (unsigned int i=0; i< theNewMeshDistance.nbFaces(); i++){
+          theNewMeshDistance.setFaceColor(i, gradientShade(std::min((squaredDistance ? vectFaceDistances[i] :
+                              1.0 )* vectFaceDistances[i], maxScaleDistance)));
+      }
+
+      std::ofstream outMesh;
+      if(vm.count("outputMesh")){
+          std::string outputMeshName = vm["outputMesh"].as<std::string>();
+          outMesh.open(outputMeshName.c_str(), std::ofstream::out);
+          MeshWriter<Z3i::RealPoint>::export2OFF(outMesh, theNewMeshDistance,true);
+          outMesh.close();
+      }
+
+      return 0;
+  }
   std::vector<RPoint> vectNearestPt;
   // Brut force distance measure between reference mesh (A) and B:
   // for each face of A we search the face which minimizes the distance (by using face projection, edge projection or center point)
