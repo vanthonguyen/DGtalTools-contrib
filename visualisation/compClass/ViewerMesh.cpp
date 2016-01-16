@@ -71,9 +71,6 @@ ViewerMesh< Space, KSpace>::helpString() const
 }
 
 
-
-
-
 template < typename Space, typename KSpace>
 void
 ViewerMesh< Space, KSpace>::keyPressEvent ( QKeyEvent *e )
