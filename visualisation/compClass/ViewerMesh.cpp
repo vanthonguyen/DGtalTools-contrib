@@ -29,7 +29,7 @@ void
 ViewerMesh< Space, KSpace>::init(){
    DGtal::Viewer3D<>::init();
    (*this).setForegroundColor(QColor::QColor(255,55,55,255));
-   QGLViewer::setKeyDescription ( Qt::Key_D|Qt::MetaModifier, "Delete the current selected faces (highlighted in red)" );
+   QGLViewer::setKeyDescription ( Qt::Key_D|Qt::ShiftModifier, "Delete the current selected faces (highlighted in red)" );
    QGLViewer::setKeyDescription ( Qt::Key_R|Qt::ShiftModifier, "Do an invert selection)" );
    QGLViewer::setKeyDescription ( Qt::Key_D, "Change the current mode to Delete mode" );
    QGLViewer::setKeyDescription ( Qt::Key_C, "Change the current mode to Color mode" );
@@ -104,7 +104,7 @@ ViewerMesh< Space, KSpace>::keyPressEvent ( QKeyEvent *e )
     handled=true;
   }
   if( e->key() == Qt::Key_D){
-    if (e->modifiers() & Qt::MetaModifier){
+    if (e->modifiers() & Qt::ShiftModifier){
       deleteCurrents();
     }else{
       setDeleteMode();
@@ -287,6 +287,3 @@ ViewerMesh<Space, KSpace>::save()
   myMesh >> myOutMeshName;
   (*this).displayMessage(QString("SAVED"), 100000);
 }
-
-
-
