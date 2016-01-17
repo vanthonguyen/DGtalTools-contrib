@@ -142,7 +142,7 @@ int main( int argc, char** argv )
   std::string outName = vm["output"].as<std::string>();
   outId.open(outName.c_str(), std::ofstream::out);
   for(unsigned int i = 0; i < insideMesh.size(); i++){
-      outId << insideMesh[i]<<std::endl;
+      outId <<points[insideMesh[i]][0]<< " "<<points[insideMesh[i]][1]<<" "<<points[insideMesh[i]][2]<<" "<<insideMesh[i]<<std::endl;
   }
     outId.close();
   return 0;
