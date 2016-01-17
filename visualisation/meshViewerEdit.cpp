@@ -124,6 +124,7 @@ int main( int argc, char** argv )
   ("penColor,c", po::value<std::vector<unsigned int>>()->multitoken(), "change the scale factor of the pen size (by default 1.0)" )
 
   ("output,o", po::value<std::string>()->default_value("out.off"), "output file: mesh (off,obj)" );
+  ("saveComplement,a", po::value<std::string>()->default_value("complement-out.off"), "output file: complement mesh (off,obj) of output mesh" );
 
   bool parseOK=true;
   bool cannotStart= false;

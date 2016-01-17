@@ -49,6 +49,7 @@ using namespace DGtal;
 using namespace Z3i;
 
 static const double approxSamePlane = 0.1;
+static const double minCosA = 0.99;
 ///////////////////////////////////////////////////////////////////////////////
 namespace po = boost::program_options;
 
@@ -56,6 +57,7 @@ bool sameSide(const RealPoint &p1,const RealPoint &p2, const RealPoint &a,const 
 {
   RealPoint cp1 = (b-a).crossProduct(p1-a);
   RealPoint cp2 = (b-a).crossProduct(p2-a);
+//trace.error()<< cp1.dot(cp2)<< std::endl;
   return cp1.dot(cp2) >= 0;
 }
 
@@ -77,6 +79,22 @@ getProjectedPoint(const RealPoint &normal, const RealPoint &aPlanePt, const Real
   (normal[0]*normal[0]+normal[1]*normal[1]+normal[2]*normal[2]);
   return (dist*normal+p);
 }
+
+RealPoint
+getCentroid(const std::vector<RealPoint> &points){
+    double sumX = 0.0;
+    double sumY = 0.0;
+    double sumZ = 0.0;
+    for(unsigned int i = 0; i < points.size(); i++){
+        sumX += points[i][0];
+        sumY += points[i][1];
+        sumZ += points[i][2];
+    }
+
+    return RealPoint(sumX/points.size(), sumY/points.size(), sumZ/points.size());
+}
+
+//bool isInsideTriangleFace(const RealPoint &v1, const RealPoint &v2, const RealPoint &v3, const  const RealPoint &aPoint)
 
 int main( int argc, char** argv )
 {
@@ -122,6 +140,7 @@ int main( int argc, char** argv )
   std::vector<RealPoint> points = PointListReader<RealPoint>::getPointsFromFile(inputPointCloudFileName);
   assert(points.size() > 0);
   std::vector<int> insideMesh;
+  RealPoint centroid = getCentroid(points);
   for (unsigned int i = 0; i < points.size(); i++){
       RealPoint aPoint = points[i];
       trace.progressBar(i, points.size());
@@ -132,8 +151,15 @@ int main( int argc, char** argv )
         RealPoint p2 = aMesh.getVertex(aFace.at(2));
         RealPoint normal = ((p0-p1).crossProduct(p2 - p1));
         RealPoint proj = getProjectedPoint(normal, p0, aPoint);
-        if(isInsideFaceTriangle(p0, p1, p2, proj)){
-            insideMesh.push_back(i);
+        
+        if(isInsideFaceTriangle(p0, p1, p2, proj) ){
+            RealPoint v1 = p0 - centroid;
+            RealPoint v2 = aPoint - centroid;
+            double cosAngle = v1.dot(v2)/v1.norm()/v2.norm();
+trace.info()<<cosAngle<<std::endl;
+            if(cosAngle > minCosA ){
+                insideMesh.push_back(i);
+            }
         }
       }
   }

@@ -59,7 +59,7 @@ class ViewerMesh: public DGtal::Viewer3D <Space, KSpace>
 public:
   
   ViewerMesh(RealMesh &aMesh, std::string outMeshName): myPenScale(1.0), myPenColor(DGtal::Color::Blue), 
-                                                        myMesh(aMesh), myOutMeshName(outMeshName),
+                                                        myMesh(aMesh), complementMesh(aMesh), myOutMeshName(outMeshName),
                                                         myPenSize(5.0), myMode(COLOR_MODE) {
   }
   
@@ -88,6 +88,7 @@ protected:
   void addCurrentMeshToQueue();  
   
   RealMesh &myMesh;
+  RealMesh complementMesh;
   std::string myOutMeshName;
   EditMode myMode;
   std::vector<unsigned int> myVectFaceToDelete;

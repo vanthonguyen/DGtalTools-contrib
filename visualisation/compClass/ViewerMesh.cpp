@@ -67,6 +67,7 @@ ViewerMesh< Space, KSpace>::helpString() const
   text += "<ul><li>Color mode (access with B key): by pressing SHIFT+mouse click ou can change the color of the selected faces.";
   text += "<li> Delete mode (access with D key): in this mode, you can select the faces that you want to delete and then you can press Meta+D to remove the selected faces.</ul> ";
 
+
   return text;
 }
 
@@ -150,6 +151,17 @@ void
 ViewerMesh<Space, KSpace>::deleteCurrents(){
   addCurrentMeshToQueue();
   myMesh.removeFaces(myVectFaceToDelete);
+  std::vector<unsigned int> facesToKeep;
+  std::vector<unsigned int> faceIndexes;
+  for (unsigned int i = 0; i < myMesh.nbFaces(); i++) {
+      faceIndexes.push_back(i);
+  }
+  std::sort(myVectFaceToDelete.begin(), myVectFaceToDelete.end());
+  std::set_difference(faceIndexes.begin(), faceIndexes.end(), myVectFaceToDelete.begin(), myVectFaceToDelete.end(), 
+                                  std::inserter(facesToKeep, facesToKeep.begin()));
+  complementMesh.removeFaces(facesToKeep);
+
+  facesToKeep.clear();
   myVectFaceToDelete.clear();
   DGtal::Viewer3D<Space, KSpace>::clear();
   DGtal::Viewer3D<Space, KSpace>::operator<<(myMesh);
@@ -166,7 +178,6 @@ ViewerMesh<Space, KSpace>::doInvertSelection(){
   std::sort(myVectFaceToDelete.begin(), myVectFaceToDelete.end());
   std::vector<unsigned int> faceIndexes;
   std::vector<unsigned int> newFacesToDetele;
-  std::sort(myVectFaceToDelete.begin(), myVectFaceToDelete.end());
   for (unsigned int i = 0; i < myMesh.nbFaces(); i++) {
       faceIndexes.push_back(i);
   }
@@ -285,5 +296,6 @@ void
 ViewerMesh<Space, KSpace>::save()
 {
   myMesh >> myOutMeshName;
+  complementMesh >> "complement-" + myOutMeshName;
   (*this).displayMessage(QString("SAVED"), 100000);
 }
