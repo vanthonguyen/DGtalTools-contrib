@@ -124,7 +124,6 @@ int main( int argc, char** argv )
   std::vector<int> insideMesh;
   for (unsigned int i = 0; i < points.size(); i++){
       RealPoint aPoint = points[i];
-      RealPoint proj = getProjectedPoint(normal, cB, cA);
       trace.progressBar(i, points.size());
       for (unsigned int j = 0; j < aMesh.nbFaces(); j++){
         std::vector<unsigned int>  aFace = aMesh.getFace(j);
@@ -143,7 +142,7 @@ int main( int argc, char** argv )
   std::string outName = vm["output"].as<std::string>();
   outId.open(outName.c_str(), std::ofstream::out);
   for(unsigned int i = 0; i < insideMesh.size(); i++){
-      outId << insideMesh[i]<<std::endl;
+      outId <<points[insideMesh[i]][0]<< " "<<points[insideMesh[i]][1]<<" "<<points[insideMesh[i]][2]<<" "<<insideMesh[i]<<std::endl;
   }
     outId.close();
   return 0;
