@@ -40,6 +40,7 @@
 #include "compClass/ViewerMesh.cpp"
 
 
+using namespace DGtal;
 
 #include <QMainWindow>
 

@@ -6,6 +6,8 @@
 #include "DGtal/images/ImageHelper.h"
 #include "DGtal/images/ConstImageAdapter.h"
 #include "DGtal/images/ImageSelector.h"
+#include "DGtal/base/Common.h"
+
 #include <sstream>      
 #include <QKeyEvent>
 #include <algorithm>
@@ -69,6 +71,19 @@ ViewerMesh< Space, KSpace>::helpString() const
 
 
   return text;
+}
+
+
+template < typename Space, typename KSpace>
+void
+ViewerMesh< Space, KSpace>::mousePressEvent ( QMouseEvent *e ){
+  if ((e->button() == Qt::LeftButton) && (e->modifiers() == Qt::AltModifier) && myMode == ERASE_MODE){
+    bool found;
+    Vec p  = DGtal::Viewer3D<Space, KSpace>::camera()->pointUnderPixel ( e->pos(), found ) ;
+    removeFromSelection(DGtal::Z3i::RealPoint(p.x, p.y, p.z));
+  }else{
+    QGLViewer::mousePressEvent(e);
+  }
 }
 
 
@@ -203,6 +218,25 @@ ViewerMesh<Space, KSpace>::addToDelete(DGtal::Z3i::RealPoint p){
   displaySelectionOnMesh();
 }
 
+template< typename Space, typename KSpace>
+void
+ViewerMesh<Space, KSpace>::removeFromSelection(DGtal::Z3i::RealPoint p){
+  if(myVectFaceToDelete.size() == 0){
+      return;
+  }
+  myUndoQueueSelected.push_front(myVectFaceToDelete);
+  std::vector<unsigned int> newVectSelection;
+  for (unsigned int i = 0; i < myVectFaceToDelete.size(); i++) {
+    DGtal::Z3i::RealPoint c = myMesh.getFaceBarycenter(myVectFaceToDelete[i]);
+    if ((c-p).norm() > myPenSize*myPenScale){
+      newVectSelection.push_back(myVectFaceToDelete[i]);
+    }
+  }
+  myVectFaceToDelete = newVectSelection;
+  (*this).displayMessage(QString("New selected size: ") + QString::number(myVectFaceToDelete.size()), 100000);
+
+  displaySelectionOnMesh();
+}
 
 template< typename Space, typename KSpace>
 void

@@ -67,6 +67,7 @@ public:
   void postSelection(const QPoint& point);
   void deleteFacesFromDist(DGtal::Z3i::RealPoint p);
   void addToDelete(DGtal::Z3i::RealPoint p);
+  void removeFromSelection(DGtal::Z3i::RealPoint p);
   void deleteCurrents();
   void deleteOthers();
   void doInvertSelection();
@@ -84,6 +85,7 @@ public:
 protected:
   virtual QString helpString() const;  
   virtual void keyPressEvent ( QKeyEvent *e );
+  virtual void mousePressEvent ( QMouseEvent *e );
   virtual void init();
   void addCurrentMeshToQueue();  
   

@@ -164,13 +164,14 @@ int main( int argc, char** argv )
       viewer->myPenColor = DGtal::Color(colors[0], colors[1], colors[2], colors[3]);
     }
   }
-  
+ 
+  //Viewer3D<> *viewer = new DGtal::Viewer3D<>();
   MainWindow w(viewer, 0,0);
   w.setWindowTitle("Simple Mesh Edit");
   w.show();
   *viewer << aMesh;
   
-  *viewer << Viewer3D<>::updateDisplay;
+  *viewer << ViewerMesh<>::updateDisplay;
   return application.exec();
 }
 
