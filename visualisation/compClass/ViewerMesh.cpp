@@ -1,12 +1,14 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 
+#ifndef Q_MOC_RUN
 #include "ViewerMesh.h"
 #include "DGtal/io/DrawWithDisplay3DModifier.h"
 #include "DGtal/images/ImageHelper.h"
 #include "DGtal/images/ConstImageAdapter.h"
 #include "DGtal/images/ImageSelector.h"
 #include "DGtal/base/Common.h"
+#endif
 
 #include <sstream>      
 #include <QKeyEvent>
@@ -15,6 +17,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 using namespace std;
+using namespace DGtal;
 using namespace qglviewer;
 
 
@@ -165,7 +168,6 @@ template< typename Space, typename KSpace>
 void
 ViewerMesh<Space, KSpace>::deleteCurrents(){
   addCurrentMeshToQueue();
-  myMesh.removeFaces(myVectFaceToDelete);
   std::vector<unsigned int> facesToKeep;
   std::vector<unsigned int> faceIndexes;
   for (unsigned int i = 0; i < myMesh.nbFaces(); i++) {
@@ -174,6 +176,9 @@ ViewerMesh<Space, KSpace>::deleteCurrents(){
   std::sort(myVectFaceToDelete.begin(), myVectFaceToDelete.end());
   std::set_difference(faceIndexes.begin(), faceIndexes.end(), myVectFaceToDelete.begin(), myVectFaceToDelete.end(), 
                                   std::inserter(facesToKeep, facesToKeep.begin()));
+
+  trace.error()<<facesToKeep.size()<<std::endl;
+  myMesh.removeFaces(myVectFaceToDelete);
   complementMesh.removeFaces(facesToKeep);
 
   facesToKeep.clear();
@@ -208,13 +213,26 @@ ViewerMesh<Space, KSpace>::doInvertSelection(){
 template< typename Space, typename KSpace>
 void
 ViewerMesh<Space, KSpace>::addToDelete(DGtal::Z3i::RealPoint p){
-  myUndoQueueSelected.push_front(myVectFaceToDelete);
+    pcl::PointXYZ searchPoint(p[0], p[1], p[2]);
+    std::vector<int> pointIdx;
+    std::vector<float> pointRadiusSquaredDistance;
+    if ( kdtree.radiusSearch (searchPoint, myPenSize, pointIdx, pointRadiusSquaredDistance) > 0 ){
+        //if found nothing, don't push
+        myUndoQueueSelected.push_front(myVectFaceToDelete);
+        for (unsigned int idx = 0; idx < pointIdx.size (); ++idx){
+            //index of dgtal and pcl is the same
+            unsigned int foundedIndex = pointIdx.at(idx);
+            myVectFaceToDelete.push_back(foundedIndex);
+        }
+    }
+/*
   for (unsigned int i = 0; i < myMesh.nbFaces(); i++) {
     DGtal::Z3i::RealPoint c = myMesh.getFaceBarycenter(i);
     if ((c-p).norm() <= myPenSize*myPenScale){
       myVectFaceToDelete.push_back(i);
     }
   }
+  */
   displaySelectionOnMesh();
 }
 
@@ -329,7 +347,16 @@ template< typename Space, typename KSpace>
 void 
 ViewerMesh<Space, KSpace>::save()
 {
-  myMesh >> myOutMeshName;
-  complementMesh >> "complement-" + myOutMeshName;
-  (*this).displayMessage(QString("SAVED"), 100000);
+    std::ofstream offMesh (myOutMeshName.c_str());
+    DGtal::MeshWriter<Z3i::RealPoint>::export2OFF(offMesh, myMesh);
+    offMesh.close();
+
+    std::string compMeshName = "complement-" + myOutMeshName;
+    std::ofstream offMesh2 (compMeshName.c_str());
+    DGtal::MeshWriter<Z3i::RealPoint>::export2OFF(offMesh2, complementMesh);
+    offMesh2.close();
+
+  //myMesh >> myOutMeshName;
+  //complementMesh >> "complement-" + myOutMeshName;
+  (*this).displayMessage(QString("SAVED: " + QString::number(myMesh.nbVertex())), 100000);
 }

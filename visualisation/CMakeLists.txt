@@ -14,6 +14,10 @@ FOREACH(FILE ${DGTAL_TOOLS_CONTRIB})
 ENDFOREACH(FILE)
 
 
+find_package(PCL 1.3 REQUIRED COMPONENTS common segmentation)
+include_directories(${PCL_INCLUDE_DIRS})
+link_directories(${PCL_LIBRARY_DIRS})
+add_definitions(${PCL_DEFINITIONS})
 
 
 if (  WITH_VISU3D_QGLVIEWER )
@@ -22,12 +26,12 @@ if (  WITH_VISU3D_QGLVIEWER )
   if (WITH_QT4)
     QT4_WRAP_UI(ui_meshViewerEdit_FORMS_HEADERS meshViewerEdit.ui)
     QT4_WRAP_CPP(meshViewerEdit_HEADERS_MOC meshViewerEdit.h  OPTIONS -DBOOST_TT_HAS_OPERATOR_HPP_INCLUDED)
-    add_executable(extractPointCloud extractFromPointCloud.cpp)
-    target_link_libraries (extractPointCloud ${DGTAL_LIBRARIES}  ${DGtalToolsContribLibDependencies})
+    #add_executable(extractPointCloud extractFromPointCloud.cpp)
+    #    target_link_libraries (extractPointCloud ${DGTAL_LIBRARIES}  ${DGtalToolsContribLibDependencies})
 
     add_executable(meshViewerEdit meshViewerEdit.cpp compClass/ViewerMesh ${meshViewerEdit_HEADERS_MOC}
                                                ${ui_meshViewerEdit_FORMS_HEADERS})
-    target_link_libraries (meshViewerEdit ${DGTAL_LIBRARIES}  ${DGtalToolsContribLibDependencies})
+    target_link_libraries (meshViewerEdit ${DGTAL_LIBRARIES}  ${DGtalToolsContribLibDependencies} ${PCL_SEGMENTATION_LIBRARIES})
 
   elseif (WITH_QT5)
     set(CMAKE_AUTOMOC ON)
@@ -38,7 +42,7 @@ if (  WITH_VISU3D_QGLVIEWER )
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${Qt5OpenGL_EXECUTABLE_COMPILE_FLAGS}")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${Qt5Xml_EXECUTABLE_COMPILE_FLAGS}")
     add_executable(meshViewerEdit meshViewerEdit compClass/ViewerMesh ${ui_meshViewerEdit_FORMS_HEADERS})
-    target_link_libraries(meshViewerEdit ${DGTAL_LIBRARIES}  ${DGtalToolsContribLibDependencies})
+    target_link_libraries(meshViewerEdit ${DGTAL_LIBRARIES}  ${DGtalToolsContribLibDependencies} ${PCL_SEGMENTATION_LIBRARIES})
     qt5_use_modules(meshViewerEdit Widgets OpenGL Xml)
   endif (WITH_QT4)
 

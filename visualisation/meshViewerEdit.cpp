@@ -169,6 +169,7 @@ int main( int argc, char** argv )
   MainWindow w(viewer, 0,0);
   w.setWindowTitle("Simple Mesh Edit");
   w.show();
+  //*viewer->setBackgroundColor(QColor(Qt::white));
   *viewer << aMesh;
   
   *viewer << ViewerMesh<>::updateDisplay;

@@ -37,13 +37,29 @@
 /** Prevents repeated inclusion of headers. */
 
 
+#ifndef Q_MOC_RUN
 #include "DGtal/helpers/StdDefs.h"
 #include "DGtal/io/viewers/Viewer3D.h"
 #include "DGtal/io/Display3D.h"
 #include "DGtal/images/ImageSelector.h"
 #include "DGtal/images/ImageContainerBySTLVector.h"
 #include "DGtal/images/ConstImageAdapter.h"
+#endif
 #include <deque>
+
+
+#include <pcl/common/common.h>
+#include <pcl/point_cloud.h>
+#include <pcl/kdtree/kdtree_flann.h>
+#include <pcl/kdtree/kdtree.h>
+
+#include <pcl/ModelCoefficients.h>
+#include <pcl/point_types.h>
+#include <pcl/filters/extract_indices.h>
+#include <pcl/filters/voxel_grid.h>
+#include <pcl/features/normal_3d.h>
+#include <pcl/sample_consensus/method_types.h>
+#include <pcl/sample_consensus/model_types.h>
 
 enum EditMode {ERASE_MODE, COLOR_MODE};
 
@@ -61,6 +77,12 @@ public:
   ViewerMesh(RealMesh &aMesh, std::string outMeshName): myPenScale(1.0), myPenColor(DGtal::Color::Blue), 
                                                         myMesh(aMesh), complementMesh(aMesh), myOutMeshName(outMeshName),
                                                         myPenSize(5.0), myMode(COLOR_MODE) {
+    pcl::PointCloud<pcl::PointXYZ>::Ptr cloudPcl(new pcl::PointCloud<pcl::PointXYZ>);
+    for (unsigned int i = 0; i < myMesh.nbFaces(); i++) {
+        DGtal::Z3i::RealPoint p = myMesh.getFaceBarycenter(i);
+        cloudPcl->points.push_back(pcl::PointXYZ(p[0], p[1], p[2]));
+    }
+    kdtree.setInputCloud (cloudPcl);
   }
   
   
@@ -96,6 +118,8 @@ protected:
   std::vector<unsigned int> myVectFaceToDelete;
   std::deque<RealMesh> myUndoQueue;
   std::deque<std::vector<unsigned int>> myUndoQueueSelected;
+
+  pcl::KdTreeFLANN<pcl::PointXYZ> kdtree;
   
 };
 

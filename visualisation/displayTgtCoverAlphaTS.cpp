@@ -24,6 +24,7 @@
  */
 
 ///////////////////////////////////////////////////////////////////////////////
+#ifndef Q_MOC_RUN
 #include <iostream>
 
 //boost
@@ -50,6 +51,7 @@
 
 // For tangential cover
 #include "DGtal/geometry/curves/SaturatedSegmentation.h"
+#endif
 
 
 using namespace DGtal;
