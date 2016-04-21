@@ -45,7 +45,7 @@
 #include "DGtal/images/ConstImageAdapter.h"
 #include <deque>
 
-enum EditMode {ERASE_MODE, COLOR_MODE};
+enum EditMode {SELECT_MODE, COLOR_MODE};
 
 
 template < typename Space = DGtal::Z3i::Space, typename KSpace = DGtal::Z3i::KSpace>
@@ -58,54 +58,26 @@ class ViewerMesh: public DGtal::Viewer3D <Space, KSpace>
 
 public:
   
-  ViewerMesh(RealMesh &aMesh, std::string outMeshName, ImagePointAssociation &anImage3d): myPenScale(1.0), 
-                                                        myPenColor(DGtal::Color::Blue), 
+  ViewerMesh(RealMesh &aMesh, std::string outMeshName): myPenScale(1.0), myPenColor(DGtal::Color::Blue),myPenSize(5.0),
                                                         myMesh(aMesh), myOutMeshName(outMeshName),
-                                                        myImage3d(anImage3d),
-                                                        myPenSize(5.0), myMode(COLOR_MODE) {
-    /*
-    std::vector<DGtal::Z3i::RealPoint::Component> vectX;
-    std::vector<DGtal::Z3i::RealPoint::Component> vectY;
-    std::vector<DGtal::Z3i::RealPoint::Component> vectZ;
-    for( RealMesh::VertexStorage::const_iterator it= myMesh.vertexBegin(); it!=myMesh.vertexEnd(); it++){
-        vectX.push_back((*it)[0]);
-        vectY.push_back((*it)[1]);
-        vectZ.push_back((*it)[2]);
-    }
-
-    DGtal::Z3i::RealPoint::Component valMaxX = *(std::max_element(vectX.begin(), vectX.end() )); 
-    DGtal::Z3i::RealPoint::Component valMaxY = *(std::max_element(vectY.begin(), vectY.end() ));
-    DGtal::Z3i::RealPoint::Component valMaxZ = *(std::max_element(vectZ.begin(), vectZ.end() )); 
-
-    DGtal::Z3i::RealPoint::Component valMinX = *(std::min_element(vectX.begin(), vectX.end() )); 
-    DGtal::Z3i::RealPoint::Component valMinY = *(std::min_element(vectY.begin(), vectY.end() )); 
-    DGtal::Z3i::RealPoint::Component valMinZ = *(std::min_element(vectZ.begin(), vectZ.end() )); 
-
-    DGtal::Z3i::RealPoint minPt (valMinX, valMinY, valMinZ);
-    DGtal::Z3i::RealPoint maxPt (valMaxX, valMaxY, valMaxZ);
-    boudingBox.first= minPt;
-    boudingBox.second= maxPt;
-
-    DGtal::Z3i::Domain dom(DGtal::Z3i::Point((int) minPt[0], (int) minPt[1], (int) minPt[2]),
-                          DGtal::Z3i::Point((int) maxPt[0], (int) maxPt[1], (int) maxPt[2]));
-    unsigned int domSize = (int)(maxPt-minPt)[0]*(int)(maxPt-minPt)[1]*(int)(maxPt-minPt)[2];
-    myImage3d = ImagePointAssociation(dom);
-    */
+                                                        myMode(COLOR_MODE)
+  {
   }
-  
   
   void postSelection(const QPoint& point);
   void deleteFacesFromDist(DGtal::Z3i::RealPoint p);
-  void addToDelete(DGtal::Z3i::RealPoint p);
+  void addToSelected(DGtal::Z3i::RealPoint p);
   void deleteCurrents();
   void deleteOthers();
   void doInvertSelection();
   void displaySelectionOnMesh();
-  void setDeleteMode();
+  void setSelectMode();
   void setColorMode();
   void undo();
   void save();
-
+  void filterVisibleFaces(const double anAngleMax);
+  
+  
   double myPenScale;
   DGtal::Color myPenColor;
   double myPenSize;
@@ -125,7 +97,7 @@ protected:
 
   std::string myOutMeshName;
   EditMode myMode;
-  std::vector<unsigned int> myVectFaceToDelete;
+  std::vector<unsigned int> myVectFaceSelected;
   std::deque<RealMesh> myUndoQueue;
   std::deque<std::vector<unsigned int>> myUndoQueueSelected;
 
@@ -137,4 +109,9 @@ protected:
 #endif // undefined viewer3dimage
 #undef ViewerMesh_RECURSES
 #endif // else defined(ViewerMesh_RECURSES)
+
+
+
+
+
 

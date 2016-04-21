@@ -35,9 +35,10 @@
 #include "DGtal/images/ConstImageAdapter.h"
 #include "DGtal/io/colormaps/GradientColorMap.h"
 #include "DGtal/io/colormaps/HueShadeColorMap.h"
+#include "compClass/ViewerMesh.cpp"
 #endif 
 
-#include "compClass/ViewerMesh.cpp"
+
 
 
 
@@ -60,12 +61,12 @@ public:
   
 public slots:
 
-  void  updatePenSize();
-  void setDeleteMode();
+  void updatePenSize();
+  void setSelectMode();
   void setColorMode();
   void undo();
   void save();
-
+  void filterVisibleFace();
 
 public slots:
   

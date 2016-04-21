@@ -46,7 +46,7 @@
 #include <boost/program_options/variables_map.hpp>
 #endif
 
-
+#include <QInputDialog>
 #include "meshViewerEdit.h"
 #include "ui_meshViewerEdit.h"
 
@@ -56,6 +56,7 @@ using namespace DGtal;
 using namespace Z3i;
 
 ///////////////////////////////////////////////////////////////////////////////
+
 namespace po = boost::program_options;
 
 
@@ -72,17 +73,18 @@ MainWindow::MainWindow(ViewerMesh<> *aViewer,
   ui->setupUi(this);
   ui->verticalLayout->addWidget(aViewer);  
   QObject::connect(ui->scaleSlider, SIGNAL(valueChanged(int)), this, SLOT(updatePenSize()));
-  QObject::connect(ui->deleteButton, SIGNAL(clicked()), this, SLOT(setDeleteMode()));
+  QObject::connect(ui->selectButton, SIGNAL(clicked()), this, SLOT(setSelectMode()));
   QObject::connect(ui->colorButton, SIGNAL(clicked()), this, SLOT(setColorMode()));
   QObject::connect(ui->saveButton, SIGNAL(clicked()), this, SLOT(save()));
   QObject::connect(ui->undoButton, SIGNAL(clicked()), this, SLOT(undo()));
+  QObject::connect(ui->filterButton, SIGNAL(clicked()), this, SLOT(filterVisibleFace()));
   updatePenSize();
 }
 
 
 void 
-MainWindow::setDeleteMode(){
-  myViewer->setDeleteMode();
+MainWindow::setSelectMode(){
+  myViewer->setSelectMode();
 }
 
 void 
@@ -100,6 +102,17 @@ MainWindow::save(){
   myViewer->save();
 }
 
+
+void 
+MainWindow::filterVisibleFace()
+{
+  bool ok;
+  double angle = QInputDialog::getDouble(this, tr("QInputDialog::getDouble()"),
+                                       tr("max allowed angle (rad):"), 
+                                           1.0,0.0,3.14, 3, &ok);
+(*myViewer).filterVisibleFaces(angle);
+
+}
 
 void 
 MainWindow::updatePenSize(){
