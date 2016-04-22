@@ -54,7 +54,7 @@ class ViewerMesh: public DGtal::Viewer3D <Space, KSpace>
 
   static const unsigned int MAXUNDO=10;
   typedef DGtal::Mesh<DGtal::Z3i::RealPoint> RealMesh;
-  typedef DGtal::ImageContainerBySTLVector<DGtal::Z3i::Domain,  std::vector<unsigned int> > ImagePointAssociation;
+
 
 public:
   
@@ -68,8 +68,6 @@ public:
   void deleteFacesFromDist(DGtal::Z3i::RealPoint p);
   void addToSelected(DGtal::Z3i::RealPoint p);
   void deleteCurrents();
-  void deleteOthers();
-  void doInvertSelection();
   void displaySelectionOnMesh();
   void setSelectMode();
   void setColorMode();
@@ -88,20 +86,13 @@ protected:
   virtual void keyPressEvent ( QKeyEvent *e );
   virtual void init();
   void addCurrentMeshToQueue();  
-  void initImage3D(); 
+  
   RealMesh &myMesh;
-  //to speed up the selection
-  ImagePointAssociation &myImage3d;
-
-  std::pair<DGtal::Z3i::RealPoint, DGtal::Z3i::RealPoint> boudingBox;
-
   std::string myOutMeshName;
   EditMode myMode;
   std::vector<unsigned int> myVectFaceSelected;
   std::deque<RealMesh> myUndoQueue;
   std::deque<std::vector<unsigned int>> myUndoQueueSelected;
-
-  std::pair<DGtal::Z3i::RealPoint, DGtal::Z3i::RealPoint> getBoundingBox();
   
 };
 

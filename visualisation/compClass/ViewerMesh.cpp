@@ -31,7 +31,6 @@ ViewerMesh< Space, KSpace>::init()
    DGtal::Viewer3D<>::init();
    (*this).setForegroundColor(QColor::QColor(255,55,55,255));
    QGLViewer::setKeyDescription ( Qt::Key_D|Qt::MetaModifier, "Delete the current selected faces (highlighted in red)" );
-   QGLViewer::setKeyDescription ( Qt::Key_R|Qt::ShiftModifier, "Do an invert selection)" );
    QGLViewer::setKeyDescription ( Qt::Key_D, "Change the current mode to Delete mode" );
    QGLViewer::setKeyDescription ( Qt::Key_C, "Change the current mode to Color mode" );
    QGLViewer::setKeyDescription ( Qt::Key_Z, "Change the current axis to Z for the current 2D image slice setting." );
@@ -39,9 +38,9 @@ ViewerMesh< Space, KSpace>::init()
    QGLViewer::setKeyDescription ( Qt::Key_Minus, "Decrease by one the pen size" );
    QGLViewer::setKeyDescription ( Qt::Key_Minus, "Undo the last edition." );
    QGLViewer::setKeyDescription ( Qt::Key_S, "Save the current mesh." );
-   QGLViewer::setMouseBinding(Qt::AltModifier, Qt::LeftButton, QGLViewer::SELECT);
-
 }
+
+
 
 
 template < typename Space, typename KSpace>
@@ -134,44 +133,6 @@ ViewerMesh< Space, KSpace>::keyPressEvent ( QKeyEvent *e )
      DGtal::Viewer3D<>::keyPressEvent ( e );
 }  
 
-void Viewer::mousePressEvent(QMouseEvent* e)
-{
-  if ((e->button() == Qt::RightButton) && (e->modifiers() == Qt::NoButton))
-	{
-	  QMenu menu( this );
-	  menu.addAction("Camera positions");
-	  menu.addSeparator();
-	  QMap<QAction*, int> menuMap;
-
-	  bool atLeastOne = false;
-	  // We only test the 20 first indexes. This is a limitation.
-	  for (unsigned short i=0; i<20; ++i)
-	if (camera()->keyFrameInterpolator(i))
-	  {
-		atLeastOne = true;
-		QString text;
-		if (camera()->keyFrameInterpolator(i)->numberOfKeyFrames() == 1)
-		  text = "Position "+QString::number(i);
-		else
-		  text = "Path "+QString::number(i);
-
-		menuMap[menu.addAction(text)] = i;
-	  }
-
-	  if (!atLeastOne)
-	{
-	  menu.addAction("No position defined");
-	  menu.addAction("Use to Alt+Fx to define one");
-	}
-
-	  QAction* action = menu.exec(e->globalPos());
-
-	  if (atLeastOne && action)
-		  camera()->playPath(menuMap[action]);
-	}
-  else
-	QGLViewer::mousePressEvent(e);
-}
 
 
 
@@ -211,24 +172,6 @@ ViewerMesh<Space, KSpace>::deleteCurrents()
   myUndoQueueSelected.clear();
 }
 
-template< typename Space, typename KSpace>
-void
-ViewerMesh<Space, KSpace>::doInvertSelection(){
-  myUndoQueueSelected.push_front(myVectFaceToDelete);
-  std::sort(myVectFaceToDelete.begin(), myVectFaceToDelete.end());
-  std::vector<unsigned int> faceIndexes;
-  std::vector<unsigned int> newFacesToDetele;
-  std::sort(myVectFaceToDelete.begin(), myVectFaceToDelete.end());
-  for (unsigned int i = 0; i < myMesh.nbFaces(); i++) {
-      faceIndexes.push_back(i);
-  }
-  std::sort(myVectFaceToDelete.begin(), myVectFaceToDelete.end());
-  std::set_difference(faceIndexes.begin(), faceIndexes.end(), myVectFaceToDelete.begin(), myVectFaceToDelete.end(), 
-                                  std::inserter(newFacesToDetele, newFacesToDetele.begin()));
-  myVectFaceToDelete = newFacesToDetele;
-  (*this).displayMessage(QString("New selected size: ") + QString::number(myVectFaceToDelete.size()), 100000);
-  displaySelectionOnMesh();
-}
 
 
 template< typename Space, typename KSpace>
@@ -352,50 +295,6 @@ ViewerMesh<Space, KSpace>::save()
   stringstream ss;
   ss << "Current mesh saved in file: " << myOutMeshName ;
   (*this).displayMessage(QString(ss.str().c_str()), 100000);
-}
-
-template< typename Space, typename KSpace>
-void 
-ViewerMesh<Space, KSpace>::initImage3D(){
-   const DGtal::Z3i::Domain domain = myImage3d.domain();
-   DGtal::Z3i::RealPoint p0 = *(domain.begin());
-   DGtal::Z3i::RealPoint p1 = *(domain.end());
-
-  for (unsigned int i = 0; i < myMesh.nbFaces(); i++) {
-    DGtal::Z3i::RealPoint c = myMesh.getFaceBarycenter(i);
-    std::vector<unsigned int> currentListPoint = myImage3d(c);
-    currentListPoint.push_back(i);
-    myImage3d.setValue(c, currentListPoint);
-  }
-}
-
-template< typename Space, typename KSpace>
-std::pair<DGtal::Z3i::RealPoint, DGtal::Z3i::RealPoint>
-ViewerMesh<Space, KSpace>::getBoundingBox(){
-  std::pair<DGtal::Z3i::RealPoint, DGtal::Z3i::RealPoint> theResult;
-  std::vector<DGtal::Z3i::RealPoint::Component> vectX;
-  std::vector<DGtal::Z3i::RealPoint::Component> vectY;
-  std::vector<DGtal::Z3i::RealPoint::Component> vectZ;
-  for( RealMesh::VertexStorage::const_iterator it= myMesh.vertexBegin(); it!=myMesh.vertexEnd(); it++){
-    vectX.push_back((*it)[0]);
-    vectY.push_back((*it)[1]);
-    vectZ.push_back((*it)[2]);
-  }
-
-  DGtal::Z3i::RealPoint::Component valMaxX = *(std::max_element(vectX.begin(), vectX.end() )); 
-  DGtal::Z3i::RealPoint::Component valMaxY = *(std::max_element(vectY.begin(), vectY.end() ));
-  DGtal::Z3i::RealPoint::Component valMaxZ = *(std::max_element(vectZ.begin(), vectZ.end() )); 
-
-  DGtal::Z3i::RealPoint::Component valMinX = *(std::min_element(vectX.begin(), vectX.end() )); 
-  DGtal::Z3i::RealPoint::Component valMinY= *(std::min_element(vectY.begin(), vectY.end() )); 
-  DGtal::Z3i::RealPoint::Component valMinZ = *(std::min_element(vectZ.begin(), vectZ.end() )); 
-
-  DGtal::Z3i::RealPoint minPt (valMinX, valMinY, valMinZ);
-  DGtal::Z3i::RealPoint maxPt (valMaxX, valMaxY, valMaxZ);
-  theResult.first= minPt;
-  theResult.second= maxPt;
-
-  return theResult;
 }
 
 

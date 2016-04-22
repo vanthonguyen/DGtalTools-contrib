@@ -60,8 +60,6 @@ using namespace Z3i;
 namespace po = boost::program_options;
 
 
-typedef DGtal::ImageContainerBySTLVector<DGtal::Z3i::Domain,  std::vector<unsigned int> > ImagePointAssociation;
-typedef DGtal::Mesh<DGtal::Z3i::RealPoint> RealMesh;
 
 
 MainWindow::MainWindow(ViewerMesh<> *aViewer,
@@ -163,35 +161,10 @@ int main( int argc, char** argv )
   
   Mesh<Z3i::RealPoint>  aMesh(true);
   aMesh << inputFilename;
-  std::vector<DGtal::Z3i::RealPoint::Component> vectX;
-  std::vector<DGtal::Z3i::RealPoint::Component> vectY;
-  std::vector<DGtal::Z3i::RealPoint::Component> vectZ;
-  for( RealMesh::VertexStorage::const_iterator it= aMesh.vertexBegin(); it!=aMesh.vertexEnd(); it++){
-      vectX.push_back((*it)[0]);
-      vectY.push_back((*it)[1]);
-      vectZ.push_back((*it)[2]);
-  }
-
-  DGtal::Z3i::RealPoint::Component valMaxX = *(std::max_element(vectX.begin(), vectX.end() )); 
-  DGtal::Z3i::RealPoint::Component valMaxY = *(std::max_element(vectY.begin(), vectY.end() ));
-  DGtal::Z3i::RealPoint::Component valMaxZ = *(std::max_element(vectZ.begin(), vectZ.end() )); 
-
-  DGtal::Z3i::RealPoint::Component valMinX = *(std::min_element(vectX.begin(), vectX.end() )); 
-  DGtal::Z3i::RealPoint::Component valMinY = *(std::min_element(vectY.begin(), vectY.end() )); 
-  DGtal::Z3i::RealPoint::Component valMinZ = *(std::min_element(vectZ.begin(), vectZ.end() )); 
-
-  DGtal::Z3i::RealPoint minPt (valMinX, valMinY, valMinZ);
-  DGtal::Z3i::RealPoint maxPt (valMaxX, valMaxY, valMaxZ);
-
-  DGtal::Z3i::Domain dom(DGtal::Z3i::Point((int) minPt[0], (int) minPt[1], (int) minPt[2]),
-          DGtal::Z3i::Point((int) maxPt[0], (int) maxPt[1], (int) maxPt[2]));
-  unsigned int domSize = (int)(maxPt-minPt)[0]*(int)(maxPt-minPt)[1]*(int)(maxPt-minPt)[2];
-
-  ImagePointAssociation anImage3d(dom);
-
+  
   QApplication application(argc,argv);
-
-  ViewerMesh<> *viewer = new ViewerMesh<> (aMesh, outputFilename, anImage3d);
+ 
+  ViewerMesh<> *viewer = new ViewerMesh<> (aMesh, outputFilename );
   if (vm.count("scalePen")){
     viewer->myPenScale = vm["scalePen"].as<double>();
   }
